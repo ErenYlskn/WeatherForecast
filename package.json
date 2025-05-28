@@ -1,0 +1,41 @@
+{
+  "name": "weather-app-mastra",
+  "version": "1.0.0",
+  "description": "Weather app with Mastra agent integration and Smithery deployment",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "mastra dev",
+    "build": "mastra build",
+    "demo": "tsx src/demo.ts",
+    "start": "node server.py"
+  },
+  "keywords": [
+    "weather",
+    "mastra",
+    "agent",
+    "smithery"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^1.2.18",
+    "@mastra/core": "^0.10.1",
+    "@mastra/libsql": "^0.10.0",
+    "@mastra/memory": "^0.10.1",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "dotenv": "^16.5.0",
+    "react-dom": "^19.1.0",
+    "react-native-web": "^0.20.0",
+    "zod": "^3.25.32"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.23",
+    "mastra": "^0.10.1",
+    "tsx": "^4.0.0",
+    "typescript": "^5.8.3"
+  }
+}

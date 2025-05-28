@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌤️ Akıllı Hava Durumu - Yaşam Asistanı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .app-container {
+            max-width: 420px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .tab-container {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom-color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            min-height: calc(100vh - 140px);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-section {
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 15px;
+            padding: 15px 20px;
+            font-size: 16px;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .input::placeholder {
+            color: #666;
+        }
+
+        .search-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-btn:disabled {
+            opacity: 0.7;
+            transform: none;
+        }
+
+        .weather-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .weather-main {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .temperature {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .city-name {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .weather-desc {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .info-section {
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-content {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            line-height: 1.6;
+        }
+
+        .quick-cities {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-city {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .quick-city:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .favorites-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .favorite-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .favorite-city {
+            font-weight: 600;
+        }
+
+        .favorite-temp {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .settings-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle {
+            width: 50px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: #667eea;
+        }
+
+        .toggle-slider {
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active .toggle-slider {
+            transform: translateX(25px);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">🌤️ Akıllı Hava Durumu</div>
+            <div class="app-subtitle">Yaşam Asistanınız</div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-container">
+            <div class="tab active" onclick="switchTab('weather')">
+                🌡️ Hava Durumu
+            </div>
+            <div class="tab" onclick="switchTab('favorites')">
+                ⭐ Favoriler
+            </div>
+            <div class="tab" onclick="switchTab('settings')">
+                ⚙️ Ayarlar
+            </div>
+        </div>
+
+        <!-- Weather Tab -->
+        <div class="tab-content active" id="weather-tab">
+            <div class="search-section">
+                <div class="input-group">
+                    <input
+                        type="text"
+                        class="input"
+                        id="cityInput"
+                        placeholder="Şehir adı girin..."
+                        onkeypress="handleKeyPress(event)"
+                    />
+                </div>
+
+                <button class="search-btn" onclick="getWeather()" id="searchButton">
+                    🔍 Hava Durumunu Öğren
+                </button>
+            </div>
+
+            <div class="quick-cities">
+                <button class="quick-city" onclick="quickSearch('İstanbul')">📍 İstanbul</button>
+                <button class="quick-city" onclick="quickSearch('Ankara')">📍 Ankara</button>
+                <button class="quick-city" onclick="quickSearch('İzmir')">📍 İzmir</button>
+                <button class="quick-city" onclick="quickSearch('Antalya')">📍 Antalya</button>
+            </div>
+
+            <div id="messageContainer"></div>
+
+            <div class="weather-card hidden" id="weatherCard">
+                <div class="weather-main">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="city-name" id="cityName"></div>
+                        <button onclick="addToFavorites()" style="background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 40px; height: 40px; color: white; cursor: pointer; font-size: 18px;">⭐</button>
+                    </div>
+                    <div class="temperature" id="temperature"></div>
+                    <div class="weather-desc" id="weatherDesc"></div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">
+                        👔 Kıyafet Önerileri
+                    </div>
+                    <div class="info-content" id="clothingAdvice"></div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">
+                        🎯 Aktivite Önerileri
+                    </div>
+                    <div class="info-content" id="activityAdvice"></div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">
+                        💊 Sağlık Tavsiyeleri
+                    </div>
+                    <div class="info-content" id="healthAdvice"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Favorites Tab -->
+        <div class="tab-content" id="favorites-tab">
+            <div class="info-section">
+                <div class="info-title">⭐ Favori Şehirlerim</div>
+                <div class="favorites-list" id="favoritesList">
+                    <div style="text-align: center; opacity: 0.7; padding: 20px;">
+                        Henüz favori şehir eklenmemiş.<br>
+                        Hava durumu sorgularından sonra ⭐ butonuna tıklayarak ekleyebilirsiniz.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
+            <div class="info-section">
+                <div class="info-title">⚙️ Uygulama Ayarları</div>
+
+                <div class="settings-item">
+                    <div>
+                        <div>Bildirimler</div>
+                        <div style="font-size: 12px; opacity: 0.7;">Hava durumu uyarıları</div>
+                    </div>
+                    <div class="toggle" onclick="toggleSetting('notifications')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="settings-item">
+                    <div>
+                        <div>Otomatik Konum</div>
+                        <div style="font-size: 12px; opacity: 0.7;">Mevcut konumunuzu kullan</div>
+                    </div>
+                    <div class="toggle" onclick="toggleSetting('location')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+
+                <div class="settings-item">
+                    <div>
+                        <div>Detaylı Öneriler</div>
+                        <div style="font-size: 12px; opacity: 0.7;">Kıyafet ve aktivite önerileri</div>
+                    </div>
+                    <div class="toggle active" onclick="toggleSetting('detailed')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-title">ℹ️ Uygulama Hakkında</div>
+                <div class="info-content">
+                    <strong>Akıllı Hava Durumu v2.0</strong><br><br>
+                    • Türkiye'nin tüm 81 ili desteklenir<br>
+                    • Gerçek zamanlı hava durumu verisi<br>
+                    • AI destekli kıyafet önerileri<br>
+                    • Aktivite ve sağlık tavsiyeleri<br>
+                    • Gemini 2.0 Flash ile güçlendirilmiştir<br><br>
+
+                    <strong>Geliştirici:</strong> AI Weather Assistant<br>
+                    <strong>Versiyon:</strong> 2.0.0
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentCity = '';
+        let isLoading = false;
+        let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        let settings = JSON.parse(localStorage.getItem('settings') || '{"notifications": false, "location": false, "detailed": true}');
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFavorites();
+            loadSettings();
+        });
+
+        function switchTab(tabName) {
+            // Remove active class from all tabs and contents
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Add active class to selected tab and content
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                getWeather();
+            }
+        }
+
+        function quickSearch(city) {
+            document.getElementById('cityInput').value = city;
+            getWeather();
+        }
+
+        async function getWeather() {
+            const cityInput = document.getElementById('cityInput');
+            const city = cityInput.value.trim();
+
+            if (!city) {
+                showMessage('Lütfen bir şehir adı girin', 'error');
+                return;
+            }
+
+            if (isLoading) return;
+
+            setLoading(true);
+            clearMessages();
+            hideWeatherCard();
+            currentCity = city;
+
+            try {
+                const response = await fetch('http://localhost:4111/api/agents/Hava%20Durumu%20Asistanı/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `${city}'da hava nasıl? Detaylı kıyafet, aktivite ve sağlık önerileri ver.`,
+                            },
+                        ],
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.text) {
+                    parseWeatherResponse(data.text, city);
+                    showMessage('Hava durumu başarıyla alındı!', 'success');
+                } else {
+                    showMessage('Hava durumu bilgisi alınamadı.', 'error');
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                showMessage('Hava durumu bilgisi alınırken bir hata oluştu. Sunucunun çalıştığından emin olun.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function parseWeatherResponse(response, city) {
+            // Extract temperature from response
+            const tempMatch = response.match(/(\d+)°C/);
+            const temperature = tempMatch ? tempMatch[1] + '°C' : 'N/A';
+
+            // Update weather card
+            document.getElementById('cityName').textContent = city;
+            document.getElementById('temperature').textContent = temperature;
+            document.getElementById('weatherDesc').textContent = 'Güncel hava durumu';
+
+            // Parse and display advice sections
+            const sections = response.split(/(?=🥶|❄️|🌤️|☀️|🔥|🌡️|👔|🎯|💊)/);
+
+            let clothingAdvice = '';
+            let activityAdvice = '';
+            let healthAdvice = '';
+
+            sections.forEach(section => {
+                if (section.includes('Kıyafet') || section.includes('giy') || section.includes('👔')) {
+                    clothingAdvice += section.replace(/[🥶❄️🌤️☀️🔥🌡️👔]/g, '').trim() + ' ';
+                } else if (section.includes('aktivite') || section.includes('🎯')) {
+                    activityAdvice += section.replace(/[🥶❄️🌤️☀️🔥🌡️🎯]/g, '').trim() + ' ';
+                } else if (section.includes('sağlık') || section.includes('💊')) {
+                    healthAdvice += section.replace(/[🥶❄️🌤️☀️🔥🌡️💊]/g, '').trim() + ' ';
+                }
+            });
+
+            // Fallback to general advice if specific sections not found
+            if (!clothingAdvice && !activityAdvice && !healthAdvice) {
+                const temp = parseInt(temperature);
+                if (!isNaN(temp)) {
+                    if (temp < 5) {
+                        clothingAdvice = 'Kalın mont, eldiven, bere ve atkı giymeyi unutmayın. Katmanlı giyim önerilir.';
+                        activityAdvice = 'İç mekan aktivitelerini tercih edin. Sıcak içecekler için.';
+                        healthAdvice = 'Vitamin C alın ve vücudunuzu sıcak tutun. Soğuk algınlığına karşı dikkatli olun.';
+                    } else if (temp < 15) {
+                        clothingAdvice = 'Ceket veya hırka, uzun kollu tişört ve pantolon giyin.';
+                        activityAdvice = 'Yürüyüş ve park gezileri için ideal hava.';
+                        healthAdvice = 'Mevsim geçişlerinde bağışıklık sisteminizi güçlendirin.';
+                    } else if (temp < 25) {
+                        clothingAdvice = 'Hafif ceket (akşam için), tişört ve rahat kıyafetler.';
+                        activityAdvice = 'Açık hava sporları ve piknik için mükemmel.';
+                        healthAdvice = 'Bol su için ve düzenli egzersiz yapın.';
+                    } else {
+                        clothingAdvice = 'Hafif, nefes alan kumaşlar, şort ve sandalet tercih edin.';
+                        activityAdvice = 'Yüzme, gölgede dinlenme ve erken saatlerde aktivite.';
+                        healthAdvice = 'Bol su için, güneşten korunun ve sıcak çarpmasına dikkat edin.';
+                    }
+                }
+            }
+
+            document.getElementById('clothingAdvice').textContent = clothingAdvice || response.substring(0, 200) + '...';
+            document.getElementById('activityAdvice').textContent = activityAdvice || 'Hava durumuna uygun aktiviteler planlayın.';
+            document.getElementById('healthAdvice').textContent = healthAdvice || 'Sağlığınıza dikkat edin ve bol su için.';
+
+            showWeatherCard();
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            const button = document.getElementById('searchButton');
+
+            if (loading) {
+                button.innerHTML = '<span class="loading"></span> Yükleniyor...';
+                button.disabled = true;
+            } else {
+                button.innerHTML = '🔍 Hava Durumunu Öğren';
+                button.disabled = false;
+            }
+        }
+
+        function showWeatherCard() {
+            document.getElementById('weatherCard').classList.remove('hidden');
+        }
+
+        function hideWeatherCard() {
+            document.getElementById('weatherCard').classList.add('hidden');
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 3000);
+        }
+
+        function clearMessages() {
+            document.getElementById('messageContainer').innerHTML = '';
+        }
+
+        function addToFavorites() {
+            if (currentCity && !favorites.includes(currentCity)) {
+                favorites.push(currentCity);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                loadFavorites();
+                showMessage(`${currentCity} favorilere eklendi!`, 'success');
+            }
+        }
+
+        function removeFromFavorites(city) {
+            favorites = favorites.filter(fav => fav !== city);
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            loadFavorites();
+            showMessage(`${city} favorilerden kaldırıldı!`, 'success');
+        }
+
+        function loadFavorites() {
+            const container = document.getElementById('favoritesList');
+            if (favorites.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; opacity: 0.7; padding: 20px;">
+                        Henüz favori şehir eklenmemiş.<br>
+                        Hava durumu sorgularından sonra ⭐ butonuna tıklayarak ekleyebilirsiniz.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = favorites.map(city => `
+                <div class="favorite-item">
+                    <div>
+                        <div class="favorite-city">${city}</div>
+                        <div style="font-size: 12px; opacity: 0.7;">Favori şehir</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="quickSearch('${city}')" style="background: none; border: none; color: white; cursor: pointer;">🔍</button>
+                        <button onclick="removeFromFavorites('${city}')" style="background: none; border: none; color: white; cursor: pointer;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSetting(setting) {
+            settings[setting] = !settings[setting];
+            localStorage.setItem('settings', JSON.stringify(settings));
+            loadSettings();
+        }
+
+        function loadSettings() {
+            Object.keys(settings).forEach(setting => {
+                const toggle = document.querySelector(`[onclick="toggleSetting('${setting}')"]`);
+                if (toggle) {
+                    if (settings[setting]) {
+                        toggle.classList.add('active');
+                    } else {
+                        toggle.classList.remove('active');
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

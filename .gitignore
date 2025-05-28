@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+node_modules/
+.env
+.DS_Store
+*.log
+dist/
+build/
+.mastra/output/
+.mastra/

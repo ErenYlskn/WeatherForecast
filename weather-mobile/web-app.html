@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌤️ Akıllı Hava Durumu - Yaşam Asistanı</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #bfdbfe;
+            opacity: 0.9;
+        }
+
+        .input-container {
+            margin-bottom: 30px;
+        }
+
+        .input {
+            width: 100%;
+            background: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #333;
+        }
+
+        .input::placeholder {
+            color: #666;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .button {
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .search-button {
+            background: #10b981;
+            color: white;
+        }
+
+        .clear-button {
+            background: #ef4444;
+            color: white;
+        }
+
+        .result-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #333;
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .result-text {
+            font-size: 16px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .info-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: #bfdbfe;
+            line-height: 1.4;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">🌤️ Hava Durumu</div>
+            <div class="subtitle">Türkiye'nin tüm illeri için anlık hava durumu</div>
+        </div>
+
+        <div class="input-container">
+            <input
+                type="text"
+                class="input"
+                id="cityInput"
+                placeholder="Şehir adı girin (örn: İstanbul, Hakkari, Van)"
+                onkeypress="handleKeyPress(event)"
+            />
+
+            <div class="button-container">
+                <button class="button search-button" onclick="getWeather()" id="searchButton">
+                    🔍 Hava Durumunu Öğren
+                </button>
+
+                <button class="button clear-button hidden" onclick="clearResults()" id="clearButton">
+                    🗑️ Temizle
+                </button>
+            </div>
+        </div>
+
+        <div id="errorContainer"></div>
+
+        <div class="result-container hidden" id="resultContainer">
+            <div class="result-title">📍 Sonuç:</div>
+            <div class="result-text" id="resultText"></div>
+        </div>
+
+        <div class="info-container">
+            <div class="info-title">ℹ️ Bilgi</div>
+            <div class="info-text">
+                • Türkiye'nin tüm 81 ili desteklenir<br>
+                • Gerçek zamanlı hava durumu verisi<br>
+                • Gemini 2.0 Flash AI ile güçlendirilmiştir<br>
+                • Örnek şehirler: İstanbul, Ankara, Hakkari, Van, Batman
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                getWeather();
+            }
+        }
+
+        async function getWeather() {
+            const cityInput = document.getElementById('cityInput');
+            const city = cityInput.value.trim();
+
+            if (!city) {
+                showError('Lütfen bir şehir adı girin');
+                return;
+            }
+
+            if (isLoading) return;
+
+            setLoading(true);
+            clearError();
+            hideResult();
+
+            try {
+                const response = await fetch('http://localhost:4111/api/agents/Hava%20Durumu%20Asistanı/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            {
+                                role: 'user',
+                                content: `${city}'da hava nasıl?`,
+                            },
+                        ],
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.text) {
+                    showResult(data.text);
+                } else {
+                    showError('Hava durumu bilgisi alınamadı.');
+                }
+            } catch (error) {
+                console.error('Hata:', error);
+                showError('Hava durumu bilgisi alınırken bir hata oluştu. Sunucunun çalıştığından emin olun.');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('cityInput').value = '';
+            hideResult();
+            clearError();
+            document.getElementById('clearButton').classList.add('hidden');
+        }
+
+        function setLoading(loading) {
+            isLoading = loading;
+            const button = document.getElementById('searchButton');
+
+            if (loading) {
+                button.innerHTML = '<span class="loading"></span> Yükleniyor...';
+                button.disabled = true;
+            } else {
+                button.innerHTML = '🔍 Hava Durumunu Öğren';
+                button.disabled = false;
+            }
+        }
+
+        function showResult(text) {
+            document.getElementById('resultText').textContent = text;
+            document.getElementById('resultContainer').classList.remove('hidden');
+            document.getElementById('clearButton').classList.remove('hidden');
+        }
+
+        function hideResult() {
+            document.getElementById('resultContainer').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function clearError() {
+            document.getElementById('errorContainer').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
